@@ -4,7 +4,7 @@ begin;
 insert into public.pm_members(user_id,email,display_name,role,unit_id)
 select id,email,'ผู้ดูแลระบบสถาบัน','admin','office'
 from auth.users
-where lower(email)=lower('CHANGE_TO_YOUR_ADMIN_EMAIL@example.com')
+where lower(email)=lower('andaman.southern2@gmail.com')
 on conflict(user_id) do nothing;
 select email,display_name,role,unit_id,active from public.pm_members where role='admin';
 commit;

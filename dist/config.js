@@ -1,7 +1,7 @@
 // Public project settings. Secret/service-role keys never belong in this file.
 window.ANDAMAN_CONFIG = {
   supabaseUrl: 'https://trzydkkblhecwpnlzglb.supabase.co/',
-  supabasePublishableKey: 'sb_publishable_qlUF9yholreSrx8qjGAGTQ_vjQ511JG',
+  supabasePublishableKey: 'sb_publishable_x0Rd2SgTVJFTHMANlcjFzg_z2AtnmXp',
   membersFunction: 'pm-members',
-  loginAliases: { admin: 'admin@users.hrvec-andaman2.invalid' }
+  loginAliases: { admin: 'andaman.southern2@gmail.com' }
 };
