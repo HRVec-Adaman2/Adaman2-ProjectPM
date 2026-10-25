@@ -1,0 +1,8 @@
+[functions.report-sheet-sync]
+# Authenticated explicitly with auth.getUser(token) inside the function.
+# Supports projects using newer asymmetric JWT signing keys.
+verify_jwt = false
+
+[functions.pm-members]
+# The function validates the user token and active Admin membership internally.
+verify_jwt = false

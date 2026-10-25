@@ -1,0 +1,31 @@
+const {test}=require('node:test');
+const assert=require('node:assert/strict');
+const vm=require('node:vm');
+const fs=require('node:fs');
+const crypto=require('node:crypto');
+test('Apps Script rejects unsigned/stale requests and upserts signed versions once',()=>{
+  const secret='TEST-ONLY-SECRET-32-CHARACTERS-LONG',rows=[],state={locks:0,released:0};
+  const sheet={getLastRow:()=>rows.length,setFrozenRows(){},getRange(row,col,n=1,width=1){const range={getValues:()=>[rows[row-1]?.slice(col-1,col-1+width)||[]],getValue:()=>rows[row-1]?.[col-1],setValues(v){v.forEach((r,i)=>rows[row-1+i]=r);return range;},setFontWeight(){return range;},setBackground(){return range;},setWrap(){return range;},createTextFinder(id){return {matchEntireCell(){return this;},findNext(){const index=rows.findIndex((r,i)=>i>0&&r[0]===id);return index<0?null:{getRow:()=>index+1};}};}};return range;}};
+  const folder={getFoldersByName:()=>({hasNext:()=>true,next:()=>folder})};
+  const ctx={console,Date,Number,JSON,Object,PropertiesService:{getScriptProperties:()=>({getProperties:()=>({SPREADSHEET_ID:'test',DRIVE_FOLDER_ID:'test',REPORT_BRIDGE_SECRET:secret})})},Utilities:{Charset:{UTF_8:'utf8'},computeHmacSha256Signature:(message,key)=>crypto.createHmac('sha256',key).update(message).digest(),base64Encode:bytes=>Buffer.from(bytes).toString('base64')},SpreadsheetApp:{openById:()=>({getSheetByName:()=>sheet}),flush(){}},DriveApp:{getFolderById:()=>folder},ContentService:{MimeType:{JSON:'json'},createTextOutput:text=>({setMimeType:()=>text})},LockService:{getScriptLock:()=>({waitLock(){state.locks++;},releaseLock(){state.released++;}})}};
+  vm.createContext(ctx);vm.runInContext(fs.readFileSync(require.resolve('../apps-script/Code.gs'),'utf8'),ctx);
+  const call=obj=>JSON.parse(ctx.doPost({postData:{contents:JSON.stringify(obj)}}));
+  assert.equal(call({payload:{projectName:'test'}}).success,false);
+  assert.equal(rows.length,0);
+  const input={reportId:'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',version:1,timestamp:Date.now(),ownerId:'11111111-1111-4111-8111-111111111111',payload:{projectName:'=IMPORTXML("bad")',academicYear:'2570',photos:[],evaluations:[],respondents:{},objectives:[],kpis:[]}};
+  function signed(data){const message=JSON.stringify(data);return {message,signature:crypto.createHmac('sha256',secret).update(message).digest('base64')};}
+  assert.equal(call(signed({...input,timestamp:Date.now()-3600000})).success,false);
+  assert.equal(call({...signed(input),signature:'wrong'}).success,false);
+  assert.equal(call(signed(input)).success,true);
+  assert.equal(rows.length,2);
+  assert.equal(rows[1][4],"'=IMPORTXML(\"bad\")");
+  assert.equal(call(signed(input)).duplicate,true);
+  assert.equal(rows.length,2);
+  assert.equal(call(signed({...input,version:2,payload:{...input.payload,projectName:'updated'}})).success,true);
+  assert.equal(rows.length,2);assert.equal(rows[1][1],2);assert.equal(rows[1][4],'updated');
+  assert.equal(call(signed(input)).duplicate,true);assert.equal(rows[1][1],2);
+  assert.equal(state.locks,state.released);
+  assert.equal(ctx.safeCell_('  +SUM(A1)'),"'  +SUM(A1)");
+  assert.throws(()=>ctx.safeCell_('x'.repeat(49001)));
+  assert.equal(ctx.saveDataToServer,undefined);
+});
