@@ -32,8 +32,8 @@ await assert.rejects(action(db,'admin','utilities.create',{source_id:fund,purpos
 await assert.rejects(action(db,'admin','disbursements.review',{id:central,version:1,decision:'approved'}),/ผู้ขอ/);
 await action(db,'executive','disbursements.review',{id:central,version:1,decision:'rejected',note:'ยกเลิกคำขอทดสอบ'});
 await action(db,'admin','utilities.create',{source_id:fund,purpose:'สร้างคำขอใหม่',amount:'3000'});
-const report=(await action(db,'officer','reports.submit',{project_id:p.id,version:0,payload:{projectName:'forged',budgetPlanned:'999999',memoBudget:'999999',photos:[]}})).id;
-const r=(await get(db,'select * from pm_reports where id=$1',[report]))[0];assert.equal(r.payload.budgetPlanned,'7000.00');assert.equal(r.payload.memoBudget,'5000.00');assert.equal(r.payload.projectName,p.title);
+const report=(await action(db,'officer','reports.submit',{project_id:p.id,version:0,payload:{projectName:'forged',budgetPlanned:'999999',memoBudget:'999999',quantGoals:[{planned:'30 คน',actual:'32 คน'}],qualGoals:[{planned:'ผ่านเกณฑ์',actual:'ผ่านเกณฑ์ร้อยละ 90'}],kpis:[{kpiText:'ผู้เข้าร่วม',target:'30 คน',actual:'32 คน',status:'บรรลุ'}],photos:[]}})).id;
+const r=(await get(db,'select * from pm_reports where id=$1',[report]))[0];assert.equal(r.payload.budgetPlanned,'7000.00');assert.equal(r.payload.memoBudget,'5000.00');assert.equal(r.payload.projectName,p.title);assert.deepEqual(r.payload.quantGoals,[{planned:'30 คน',actual:'32 คน'}]);assert.equal(r.payload.qualGoals[0].actual,'ผ่านเกณฑ์ร้อยละ 90');assert.equal(r.payload.kpis[0].target,'30 คน');
 await assert.rejects(action(db,'officer','reports.save',{project_id:p.id,version:1,payload:{}}),/ถูกส่ง/);
 await action(db,'executive','reports.review',{id:report,version:1,decision:'accepted'});assert.equal((await get(db,'select status from pm_projects where id=$1',[p.id]))[0].status,'completed');
 await assert.rejects(action(db,'admin','members.update',{id:ids.admin,display_name:'Admin',role:'officer',unit_id:'office',active:true}),/อย่างน้อย/);
