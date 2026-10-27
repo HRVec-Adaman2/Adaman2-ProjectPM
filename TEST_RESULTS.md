@@ -1,20 +1,80 @@
-# Validation — 2026-10-26
+# ชุดรวมหน้าบ้าน–หลังบ้าน — 27 ตุลาคม 2569
 
-Command: `npm test` with Node.js v24.22.1. Result: **36 passed, 0 failed**.
+- npm run build:gas ผ่าน: สร้าง Index.html และ Core.gs จากต้นฉบับเดียวกับ report editor และ public Config.html
+- npm test ผ่าน 58 รายการ รวม PM Login 12 รายการ, PostgreSQL/RLS/วงเงิน, ค่าเฉลี่ย/S.D., ตารางเป้าหมาย, Apps Script signed writes/อัปเกรดชีต, SDK loader และ report-sheet-sync
+- Supabase ANDAMAN2-PM ตรวจแบบอ่านอย่างเดียว: ACTIVE_HEALTHY, ตาราง pm_* และ andaman_project_reports เปิด RLS; bucket andaman-pm-files / andaman-report-photos เป็น private; active Admin ยืนยันอีเมลแล้ว
+- รายการ Edge Functions จริงพบ pm-members และ report-sheet-sync- (slug มีขีดท้าย); คู่มือให้ติดตั้งชื่อ report-sheet-sync ให้ตรง config โดยไม่ลบตัวเก่า
+- ใช้ Verify JWT = true ตามเอกสาร Authorization headers ปัจจุบัน และยังมีการตรวจ getUser / Admin / เจ้าของในฟังก์ชัน
+- ไม่มีการแก้ schema, บัญชี, รหัสผ่านหรือ Secrets จริง; ยังต้องทดสอบ Google Apps Script / Sheets / Drive ด้วย deployment ของผู้ใช้
+- ไม่ได้ Push เข้า GitHub ของผู้ใช้จากที่นี่; โค้ดทั้งหมดและคู่มือพร้อมให้นำไปใช้ตามขั้นตอน
 
-- Server derives mean, sample S.D., goal pairs and narrative from the same core as the UI.
-- HMAC/timestamp/UUID validation; user-token verification and owner-scoped Edge queries; CORS rejection.
-- Duplicate and out-of-order request versions cannot create duplicate report rows or overwrite newer data.
-- Legacy 43-column sheet is copied before a 47-column header upgrade; existing report rows remain intact. Unknown schemas are rejected.
-- Spreadsheet formula injection is escaped; oversized cells and invalid counts are rejected before Drive writes.
-- Image filenames preserve MIME extension and report version; no Base64 images are stored in cells.
-- Legacy narrative goals, structured goals, multiline fields, cleared rows, min/max limits and KPI compatibility.
-- Evaluation narrative ordering and ties; unanswered items and single-response S.D.
-- Apps Script template replaces public Config and produces six syntactically valid inline scripts.
-- Frontend admin alias maps to an email and still uses Supabase signInWithPassword.
+---
 
-The inherited report layout was visually verified in the preceding application update, including three comparison tables on a normal page, pagination with a 48-row fixture, and mobile width. This package does not change the print layout. The new deployment/config and backend changes were tested using simulated APIs. No live Google Apps Script deployment or real Google Sheets/Drive write was performed for this delivery.
+# ตรวจการแก้หน้าเข้าสู่ระบบ — 26 ตุลาคม 2569
 
-The read-only Supabase check found that ANDAMAN2-PM did not yet contain andaman_project_reports or andaman-report-photos. This delivery does not run SQL or deploy Edge Functions to that project.
+- รุ่น LOGIN-FIX-20261026-1: dist/app.js ปิดการเก็บ session ข้ามหน้า และเอาการเปิดระบบจาก getSession() ตอนเริ่มหน้าออก
+- node --check dist/app.js ผ่าน; npm test ผ่าน 37 รายการ รวม pm-login.test.cjs ใหม่ 12 รายการ
+- การทดสอบ auth ใช้แอปจริงใน Node VM โดยจำลองเฉพาะ DOM, storage และ Supabase network: ไม่ใช้บัญชีหรือรหัสผ่านจริง
+- ตรวจ session เก่า, #guide, auth events, ข้อมูลว่าง/ผิด, getUser ล้มเหลว, สมาชิก inactive/หายไป, logout, การตอบกลับล่าช้า, กด submit ซ้ำ และ back-forward cache
+- ตรวจด้วยเบราว์เซอร์ที่ managed preview: เปิด #guide แล้วยังค้างหน้า login, เข้า demo ด้วยปุ่ม, reload กลับหน้า login
+- ไม่แก้ schema, ข้อมูลจริง, บัญชี, รหัสผ่าน, config.js หรือ Google Apps Script
+- ยังไม่ได้ Push ไป GitHub ของผู้ใช้ และยังไม่ได้ทดสอบรหัสผ่านจริงบน GitHub Pages; มีขั้นตอนติดตั้งและตรวจใน UPDATE_LOGIN_TH.md
 
-Supabase browser SDK is bundled from the existing project; Edge Function import pins @supabase/supabase-js@2.118.0. Tests/build have no package dependencies; Node 24+ is required for the bridge TypeScript stripping test.
+---
+
+# ตรวจการอัปเดตตารางเป้าหมาย — 26 ตุลาคม 2569
+
+- npm test: ผ่าน 25 รายการ รวมการนำเข้าข้อมูลรุ่นเดิม การส่งออก/นำเข้าตารางใหม่ การล้างข้อมูล และการตรวจรูปแบบข้อมูล
+- PostgreSQL จำลอง: reports.submit เก็บ quantGoals, qualGoals และ kpis ใน payload ครบ พร้อมคงการตรวจสิทธิ์และตัวเลขโครงการ
+- เบราว์เซอร์โหมดสาธิต: กรอกทั้งสามตาราง เพิ่มและลบรายการ บันทึกเข้าโครงการ v1 โหลดหน้าใหม่ และเปิดดูข้อมูลเดิมครบ
+- A4: ตารางสองคอลัมน์กว้างเท่ากัน รายละเอียดชิดซ้าย เส้นดำ หัวข้อ 6 และ 7 ขนาด 16 pt เท่ากัน
+- ตารางละสองรายการ: หัวข้อ 5.1, 5.2 และ 6 อยู่ในหน้าเดียวตามแบบ มีเลขหน้าด้านบนขวา
+- ข้อมูลทดสอบ 48 รายการและข้อความหลายบรรทัด: แบ่งเป็นรายงาน 13 หน้า ไม่พบเนื้อหาล้นพื้นที่พิมพ์ และรายการสุดท้ายอยู่ครบ
+- หน้ากรอกที่กรอบกว้าง 390 px: ช่องคู่เรียงลง ไม่มีการล้นแนวนอนของหน้า
+- Supabase ANDAMAN2-PM: ตรวจแบบอ่านอย่างเดียวว่า pm_reports.payload เป็น JSONB ไม่แก้ schema หรือข้อมูลจริง
+- การทดสอบบน GitHub ของผู้ใช้และการบันทึกด้วยบัญชีจริงต้องทำหลังผู้ใช้นำชุดอัปเดตไปติดตั้ง ยังไม่ได้ Push ไป GitHub ของผู้ใช้
+
+---
+
+# ผลการตรวจสอบ Andaman Report v2.0
+
+วันที่จัดทำ: 24 ตุลาคม 2569
+
+## ผ่านการตรวจสอบอัตโนมัติ 12 รายการ
+
+- สูตรค่าเฉลี่ยถ่วงน้ำหนักและข้อที่ไม่มีคำตอบ
+- เกณฑ์แปลผลทุกช่วงคะแนน
+- ร้อยละผู้ตอบจากจำนวนจริง
+- ปฏิเสธจำนวนติดลบ ทศนิยม และข้อมูลที่ไม่ใช่ตัวเลข
+- ตรวจวันเริ่ม/สิ้นสุด งบประมาณ ร้อยละ และยอดผู้ตอบ
+- นำเข้าเป็นสำเนาใหม่ ไม่คัดลอกสิทธิ์หรือเวอร์ชันออนไลน์
+- ปฏิเสธ SVG ที่อาจรันสคริปต์และ URL ภาพภายนอกจากไฟล์นำเข้า
+- รหัสรายงาน UUID v4 ไม่ซ้ำในชุดทดสอบ
+- รัน SQL ซ้ำได้ ตรวจ RLS แยกผู้ใช้ สิทธิ์คอลัมน์ การเพิ่มเวอร์ชัน และภาพส่วนตัวด้วย Postgres WASM (PGlite)
+- Apps Script ปฏิเสธคำขอไม่มีลายเซ็น/หมดอายุ เขียนรหัสเดิมโดยไม่เพิ่มแถวซ้ำ และไม่ถอยกลับไปเวอร์ชันเก่า
+- ป้องกันสูตรในข้อความของเซลล์ และจำกัดความยาวต่อเซลล์
+- ตรวจ JavaScript ที่รวมใน Index.html ของ Apps Script และภาพที่ฝังแล้ว
+
+จำนวนข้างต้นอ้างอิง test runner 12 tests โดยบาง test ตรวจหลายกรณีร่วมกัน
+
+## ตรวจผ่านเบราว์เซอร์
+
+- เปิดภาพรวม สร้างรายงานตัวอย่าง และเปิดร่างหลัง reload
+- คำนวณข้อมูลตัวอย่าง: ผู้ตอบ 30 คน ครู/บุคลากร 83.33% นักเรียน/นักศึกษา 16.67% ค่าเฉลี่ยรวม 4.53
+- ข้อความภาษาไทยมากกว่า 13,000 ตัวอักษร: ขยายรายงานเป็น 17 หน้า มีข้อความท้ายครบ สารบัญเปลี่ยนตามหน้า และไม่พบเนื้อหาล้นพื้นที่จัดพิมพ์
+- เพิ่มรายการประเมินรวม 35 ข้อ: ตารางแบ่งเป็น 3 ส่วนข้ามหน้า หัวตารางซ้ำครบ จำนวนแถวครบ 35 และมีรายการท้ายตาราง รายงานยาวรวม 21 หน้าเมื่อรวมกรณีข้อความยาว
+- หน้าจอขนาดเล็ก: ทดสอบผ่าน iframe กว้าง 390 px พื้นที่เนื้อหา 375 px ไม่มีการเลื่อนแนวนอน และปุ่มเปิดเมนูเปลี่ยน aria-expanded เป็น true
+- ภาพโลโก้และตราครุฑในหน้ารายงานโหลดสำเร็จ
+
+## ยังไม่ได้ตรวจบนบัญชีจริง
+
+ยังไม่ได้ติดตั้ง SQL หรือ Edge Function ใน Supabase ของผู้ใช้ และยังไม่ได้ตั้ง Apps Script / Sheets / Drive จริง จึงยังไม่ยืนยันการทำงานครบเส้นทางบนบริการเหล่านั้น ไม่ได้ทดสอบเครื่องพิมพ์จริงหรือความเหมือนของ PDF ระหว่างระบบปฏิบัติการ
+
+หลังเลือกโปรเจกต์และตั้งค่าแล้ว ต้องทดสอบผู้ใช้จริงสองบัญชี การบันทึกและเรียกคืนรูป การส่งชีตซ้ำ การแก้ไขพร้อมกัน และตรวจ Supabase Advisors ก่อนใช้งานทางการ
+
+## ตรวจเพิ่มตามภาพบันทึกข้อความและเมนูฉบับปรับปรุง
+
+- บันทึกข้อความตัวอย่างอยู่ครบใน A4 1 หน้า ไม่พบเนื้อหาล้น กรอบความเห็นผู้บริหารมี 2 คอลัมน์
+- คู่มือบนเว็บมีเฉพาะการกรอก พิมพ์ และหลักการคำนวณ ไม่พบคำอธิบาย Supabase หรือ Google Sheets
+- ไม่พบเมนูตั้งค่าการเชื่อมต่อหรือฟอร์ม config บนเว็บ บัญชีผู้ใช้เปิดเฉพาะการเข้าสู่ระบบตามค่าที่ผู้ดูแลใส่ใน config.js
+- โหมดที่ยังไม่มี config แจ้งผู้ใช้ให้ติดต่อผู้ดูแลเมื่อจะบันทึกออนไลน์

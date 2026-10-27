@@ -1,6 +1,6 @@
 const {test}=require('node:test');
 const assert=require('node:assert/strict');
-const C=require('../source/report-editor/core.js');
+const C=require('../dist/core.js');
 const near=(actual,expected)=>assert.ok(Math.abs(actual-expected)<1e-12,`${actual} != ${expected}`);
 
 test('sample S.D. respects frequency counts and the sample denominator',()=>{

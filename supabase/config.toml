@@ -1,3 +1,8 @@
-# Merge this section into an existing config.toml; keep unrelated functions.
+# Both functions are called by signed-in users with Authorization: Bearer <user JWT>.
+# Keep the platform check AND the auth.getUser / membership checks in the handlers.
+# Current reference: https://supabase.com/docs/guides/functions/auth-headers
 [functions.report-sheet-sync]
+verify_jwt = true
+
+[functions.pm-members]
 verify_jwt = true

@@ -1,10 +1,22 @@
 {
-  "name": "andaman-report-apps-script",
-  "version": "2.1.0",
-  "private": true,
-  "description": "Complete Andaman Report Apps Script frontend and signed Sheets/Drive backend",
+  "name": "andaman-project-budget",
+  "version": "3.0.0",
+  "description": "Project and budget management for Southern Vocational Institute 2",
   "scripts": {
-    "build": "node scripts/build.cjs",
-    "test": "node --test tests/*.test.cjs"
-  }
+    "test": "node --test tests/*.test.cjs",
+    "build:gas": "node scripts/build-apps-script.cjs",
+    "build:handbook": "node scripts/build-handbook.cjs",
+    "build:user-guide": "node scripts/build-user-guide.cjs"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@supabase/supabase-js": "2.118.0"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "0.5.11"
+  },
+  "private": true
 }

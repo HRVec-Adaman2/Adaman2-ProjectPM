@@ -1,6 +1,6 @@
 const {test}=require('node:test');
 const assert=require('node:assert/strict');
-const C=require('../source/report-editor/core.js');
+const C=require('../dist/report-editor/core.js');
 
 test('old target narratives migrate intact without inventing actual results',()=>{
  const old=C.blank();delete old.quantGoals;delete old.qualGoals;
