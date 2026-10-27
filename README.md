@@ -34,6 +34,10 @@ build:gas สร้าง dist/report-editor/config.js จาก apps-script/Con
 
 ## ขอบเขตการส่งมอบ
 
-ผ่านการทดสอบอัตโนมัติ 58 รายการ ตรวจฐานข้อมูลจริงแบบอ่านอย่างเดียวว่ามีตาราง/bucket และ Admin แล้ว การติดตั้งใน GitHub, Apps Script และ Supabase Edge Functions ของคุณทำตามคู่มือ ไม่ได้ Push/Deploy บริการเหล่านั้นให้โดยอัตโนมัติ และต้องทดสอบ Sheets/Drive กับ deployment จริง
+ผ่านการทดสอบอัตโนมัติ 61 รายการ ตรวจฐานข้อมูลจริงแบบอ่านอย่างเดียวว่ามีตาราง/bucket และ Admin แล้ว การติดตั้งใน GitHub, Apps Script และ Supabase Edge Functions ของคุณทำตามคู่มือ ไม่ได้ Push/Deploy บริการเหล่านั้นให้โดยอัตโนมัติ และต้องทดสอบ Sheets/Drive กับ deployment จริง
 
 ชุดนี้ไม่มีรหัสผ่านหรือ server secrets ค่า secret ใส่ใน Supabase Secrets และ Apps Script Script properties เท่านั้น
+
+## แพตช์ GitHub Actions รอบ #18
+
+ถ้าอัปเดตทับชุดเดิมแล้ว Actions พบ 7 !== 6 ใน tests/bundle.test.cjs ให้ใช้ไฟล์ tests/bundle.test.cjs ที่รวมมาในชุดนี้ และ workflow ปัจจุบัน รายละเอียดอยู่ใน FIX_GITHUB_ACTIONS_TH.md

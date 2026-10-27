@@ -1,3 +1,15 @@
+# แก้ CI-FIX-20261027-1 — 27 ตุลาคม 2569
+
+- GitHub API ยืนยัน run #18 / 40455596552 ล้มเหลวที่ npm test; Node setup และ npm ci ผ่านแล้ว
+- ทำซ้ำจาก Commit cd71f2fa2c95e1488a8d985e114ec9bf83632df3: ผ่าน 63/64, ล้ม tests/bundle.test.cjs เพราะ expected 6 scripts แต่จริงมี 7 หลังเพิ่ม SDK loader
+- แพตช์ tests/bundle.test.cjs ให้เรียกชุดปัจจุบัน gas-bundle.test.cjs; workflow ใช้ setup-node@v6 และ ubuntu-24.04
+- หลังแก้บนสำเนา Commit เดียวกันโดยคงไฟล์เก่าที่เหลือ: npm test ผ่าน 64/64 ไม่มี skip
+- ชุดต้นฉบับสะอาดที่รวม compatibility file: npm test ผ่าน 61/61 ไม่มี skip
+- ไม่เปลี่ยนโค้ดทำงานหน้าเว็บ, backend, configuration ของผู้ใช้ หรือข้อมูลจริง
+- ต้องให้ผู้ใช้ Commit/Push สองไฟล์แล้วตรวจ Actions ของ Commit ใหม่ ยังไม่ได้ยืนยัน Deploy บน GitHub จริงหลังแพตช์
+
+---
+
 # ชุดรวมหน้าบ้าน–หลังบ้าน — 27 ตุลาคม 2569
 
 - npm run build:gas ผ่าน: สร้าง Index.html และ Core.gs จากต้นฉบับเดียวกับ report editor และ public Config.html
