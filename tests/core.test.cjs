@@ -1,7 +1,7 @@
 const {test}=require('node:test');
 const assert=require('node:assert/strict');
-const C=require('../dist/core.js');
-test('weighted overall uses all answers; missing items are excluded',()=>{const r=C.evaluate([{s5:1},{s1:9},{s5:0}]);assert.equal(r.mean,1.4);assert.equal(r.total,10);assert.equal(r.items[2].mean,null);assert.equal(r.items[2].trans,'ยังไม่มีข้อมูล');});
+const C=require('../source/report-editor/core.js');
+test('overall mean uses all answers; missing items are excluded',()=>{const r=C.evaluate([{s5:1},{s1:9},{s5:0}]);assert.equal(r.mean,1.4);assert.equal(r.total,10);assert.equal(r.items[2].mean,null);assert.equal(r.items[2].trans,'ยังไม่มีข้อมูล');});
 test('zero responses produce no assessment, not a low score',()=>{assert.equal(C.evaluate([]).mean,null);assert.equal(C.evaluate([{s1:0}]).trans,'ยังไม่มีข้อมูล');});
 test('interpretation matches documented boundaries',()=>{for(const [m,t] of [[1.5,'น้อยที่สุด'],[1.51,'น้อย'],[2.5,'น้อย'],[2.51,'ปานกลาง'],[3.5,'ปานกลาง'],[3.51,'มาก'],[4.5,'มาก'],[4.51,'มากที่สุด']])assert.equal(C.meanLabel(m),t);});
 test('respondent percentages use counts as the source',()=>{const r=C.respondentStats({teacher:{count:25,pct:1},student:{count:5},parent:{count:0}});assert.equal(r.total,30);assert.ok(Math.abs(r.teacher.pct-83.3333333333)<1e-8);});

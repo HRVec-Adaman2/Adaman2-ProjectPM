@@ -1,8 +1,5 @@
-node_modules/
-*.tar.gz
-*.zip
 .env
 .env.*
 !.env.example
-supabase/.temp/
-.openai/local-state/
+node_modules/
+.DS_Store
